@@ -1,4 +1,4 @@
-export type OtRole = 'PLC' | 'RTU' | 'HMI' | 'Gateway' | 'Historian' | 'Sensor' | 'IPC';
+export type OtRole = 'PLC' | 'RTU' | 'HMI' | 'Gateway' | 'Historian' | 'Sensor' | 'IPC' | 'ip' | 'indicator' | 'IoT' | string;
 export type Protocol = 'ModbusTCP' | 'OPCUA' | 'Profinet' | 'DNP3' | 'MQTT' | 'S7' | 'BACnet';
 export type Source = 'sensor' | 'netflow' | 'syslog' | 'controller';
 export type Severity = 'low' | 'medium' | 'high' | 'critical';

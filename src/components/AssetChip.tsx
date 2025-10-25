@@ -1,6 +1,6 @@
 import { OtRole } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { Cpu, Radio, Monitor, Server, Database, Gauge, PcCase } from 'lucide-react';
+import { Cpu, Radio, Monitor, Server, Database, Gauge, PcCase, Globe, Shield, Wifi } from 'lucide-react';
 
 interface AssetChipProps {
   name: string;
@@ -9,7 +9,7 @@ interface AssetChipProps {
   className?: string;
 }
 
-const roleIcons: Record<OtRole, any> = {
+const roleIcons: Record<string, any> = {
   PLC: Cpu,
   RTU: Radio,
   HMI: Monitor,
@@ -17,10 +17,13 @@ const roleIcons: Record<OtRole, any> = {
   Historian: Database,
   Sensor: Gauge,
   IPC: PcCase,
+  ip: Globe,
+  indicator: Shield,
+  IoT: Wifi,
 };
 
 export function AssetChip({ name, role, zone, className }: AssetChipProps) {
-  const Icon = roleIcons[role];
+  const Icon = roleIcons[role] || PcCase; // Fallback to PcCase if role not found
   
   return (
     <div className={`inline-flex items-center gap-2 ${className || ''}`}>
