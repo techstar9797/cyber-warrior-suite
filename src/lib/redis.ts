@@ -1,18 +1,12 @@
-import Redis from 'ioredis';
+import { createClient, RedisClientType } from 'redis';
 
 // Singleton Redis client
-let redisClient: Redis | null = null;
+let redisClient: RedisClientType | null = null;
 
-export function getRedisClient(): Redis {
+export async function getRedisClient(): Promise<RedisClientType> {
   if (!redisClient) {
-    redisClient = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD || '',
-      retryDelayOnFailover: 100,
-      enableReadyCheck: false,
-      maxRetriesPerRequest: 3,
-      lazyConnect: true,
+    redisClient = createClient({
+      url: process.env.REDIS_URL || 'redis://localhost:6379',
     });
 
     redisClient.on('error', (err) => {
@@ -22,6 +16,10 @@ export function getRedisClient(): Redis {
     redisClient.on('connect', () => {
       console.log('Connected to Redis');
     });
+
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+    }
   }
 
   return redisClient;

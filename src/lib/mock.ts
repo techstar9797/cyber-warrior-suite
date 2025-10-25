@@ -17,28 +17,43 @@ let cachedTopology: { nodes: TopologyNode[]; edges: TopologyEdge[] } | null = nu
 async function loadIncidents(): Promise<Incident[]> {
   if (cachedIncidents) return cachedIncidents;
 
-  // Skip Redis in browser - use JSON fallback directly
+  // Try backend API first, fallback to JSON
   try {
-    const response = await fetch('/data/mock-incidents.json');
-    cachedIncidents = await response.json();
+    const response = await fetch('http://localhost:3001/api/incidents');
+    const data = await response.json();
+    cachedIncidents = data.items || data;
     return cachedIncidents!;
   } catch (error) {
-    console.error('Error loading incidents:', error);
-    return [];
+    console.warn('Backend API not available, using JSON fallback:', error);
+    try {
+      const response = await fetch('/data/mock-incidents.json');
+      cachedIncidents = await response.json();
+      return cachedIncidents!;
+    } catch (err) {
+      console.error('Error loading incidents:', err);
+      return [];
+    }
   }
 }
 
 async function loadAssets(): Promise<Asset[]> {
   if (cachedAssets) return cachedAssets;
 
-  // Skip Redis in browser - use JSON fallback directly
+  // Try backend API first, fallback to JSON
   try {
-    const response = await fetch('/data/mock-assets.json');
+    const response = await fetch('http://localhost:3001/api/assets');
     cachedAssets = await response.json();
     return cachedAssets!;
   } catch (error) {
-    console.error('Error loading assets:', error);
-    return [];
+    console.warn('Backend API not available, using JSON fallback:', error);
+    try {
+      const response = await fetch('/data/mock-assets.json');
+      cachedAssets = await response.json();
+      return cachedAssets!;
+    } catch (err) {
+      console.error('Error loading assets:', err);
+      return [];
+    }
   }
 }
 
@@ -59,14 +74,21 @@ async function loadTopology(): Promise<{ nodes: TopologyNode[]; edges: TopologyE
 async function loadRules(): Promise<RuleDef[]> {
   if (cachedRules) return cachedRules;
 
-  // Skip Redis in browser - use JSON fallback directly
+  // Try backend API first, fallback to JSON
   try {
-    const response = await fetch('/data/mock-rules.json');
+    const response = await fetch('http://localhost:3001/api/rules');
     cachedRules = await response.json();
     return cachedRules!;
   } catch (error) {
-    console.error('Error loading rules:', error);
-    return [];
+    console.warn('Backend API not available, using JSON fallback:', error);
+    try {
+      const response = await fetch('/data/mock-rules.json');
+      cachedRules = await response.json();
+      return cachedRules!;
+    } catch (err) {
+      console.error('Error loading rules:', err);
+      return [];
+    }
   }
 }
 
@@ -229,7 +251,18 @@ export async function getRules(): Promise<RuleDef[]> {
 }
 
 export async function putRules(rules: RuleDef[]): Promise<void> {
-  // Save to in-memory cache in browser
-  cachedRules = rules;
-  console.log('Rules updated (in-memory):', rules.length);
+  // Try backend API first
+  try {
+    await fetch('http://localhost:3001/api/rules', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rules),
+    });
+    cachedRules = rules;
+    console.log('Rules updated via backend API:', rules.length);
+  } catch (error) {
+    console.warn('Backend API not available, using in-memory:', error);
+    cachedRules = rules;
+    console.log('Rules updated (in-memory):', rules.length);
+  }
 }
