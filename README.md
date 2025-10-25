@@ -59,6 +59,59 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Redis Stack (JSON + Search + TimeSeries)
+- ioredis (Redis client)
+
+## Phase 2: Redis Backend Integration
+
+Phase 2 replaces the mock JSON data with a Redis backend while maintaining the same API contracts.
+
+### Redis Setup
+
+1. **Start Redis Stack:**
+   ```bash
+   # Start Redis with Docker Compose (includes Redis Insight UI)
+   pnpm dev:stack
+
+   # Or start only Redis:
+   docker-compose up -d redis
+   ```
+
+2. **Access Redis Insight:**
+   - Web UI: http://localhost:8001
+   - Redis Server: localhost:6379
+
+3. **Seed Data:**
+   ```bash
+   # Load mock data into Redis
+   pnpm seed:redis
+   ```
+
+### Available Scripts
+
+- `pnpm dev` - Start development server (JSON mock mode)
+- `pnpm dev:stack` - Start with Redis backend (recommended for Phase 2)
+- `pnpm seed:redis` - Load mock data into Redis
+- `pnpm build` - Build for production
+- `pnpm preview` - Preview production build
+
+### Redis Data Structure
+
+The application uses these Redis keys:
+- `sec:incident:*` - Individual incidents (JSON)
+- `sec:asset:*` - Individual assets (JSON)
+- `sec:rules` - Security rules (JSON array)
+- `sec:topology` - Network topology (JSON)
+- `idx:incidents` - RediSearch index for incidents
+- `idx:assets` - RediSearch index for assets
+
+### Phase 3: Composio Integration (TODO)
+
+Phase 3 will add real integrations using Composio. See `src/lib/composio.ts` for detailed TODOs including:
+- Slack notifications
+- Email alerts
+- Rule engine actions
+- Error handling and monitoring
 
 ## How can I deploy this project?
 
