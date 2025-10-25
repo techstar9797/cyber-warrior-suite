@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cyber Warrior Suite - Health Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .status { padding: 20px; background: #f0f0f0; border-radius: 8px; }
+        .ok { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Cyber Warrior Suite - Health Check</h1>
+    <div class="status">
+        <p class="ok">✓ Server is running</p>
+        <p><strong>Status:</strong> OK</p>
+        <p><strong>Time:</strong> <span id="time"></span></p>
+        <p><strong>API Endpoints:</strong></p>
+        <ul>
+            <li><a href="/data/mock-incidents.json">Incidents Data</a></li>
+            <li><a href="/data/mock-assets.json">Assets Data</a></li>
+            <li><a href="/data/mock-rules.json">Rules Data</a></li>
+            <li><a href="/data/mock-topology.json">Topology Data</a></li>
+        </ul>
+        <p><strong>Main App:</strong> <a href="/">Go to Dashboard</a></p>
+    </div>
+    <script>
+        document.getElementById('time').textContent = new Date().toISOString();
+        fetch('/data/mock-incidents.json')
+            .then(res => res.json())
+            .then(data => {
+                const status = document.querySelector('.status');
+                status.innerHTML += `<p class="ok">✓ Data endpoints working (${data.length} incidents loaded)</p>`;
+            })
+            .catch(err => {
+                const status = document.querySelector('.status');
+                status.innerHTML += `<p class="error">✗ Data endpoints error: ${err.message}</p>`;
+            });
+    </script>
+</body>
+</html>

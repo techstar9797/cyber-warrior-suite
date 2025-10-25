@@ -34,7 +34,85 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+# The app will be available at http://localhost:8080
+# Check health status at http://localhost:8080/health.html
 ```
+
+## Local Dev Troubleshooting
+
+### Default Port
+- **Default dev port**: 8080 (configured in `vite.config.ts`)
+- **Change port**: Set `PORT` environment variable or use `npm run dev:port PORT=3000`
+
+### Starting the App
+
+**Option 1: Standard dev server**
+```bash
+npm run dev
+# Opens at http://localhost:8080
+```
+
+**Option 2: Custom port**
+```bash
+PORT=3000 npm run dev:port
+# Opens at http://localhost:3000
+```
+
+**Option 3: With Redis backend**
+```bash
+npm run dev:stack
+# Starts Redis Docker container + dev server
+```
+
+### Health Check
+Visit http://localhost:8080/health.html to verify:
+- ✓ Server is running
+- ✓ Data endpoints are accessible
+- ✓ All JSON mock data files are loaded
+
+### Common Issues
+
+**Port already in use (8080)**
+```bash
+# Find what's using port 8080
+lsof -i :8080
+
+# Kill the process if needed
+kill <PID>
+
+# Or use a different port
+PORT=3000 npm run dev:port
+```
+
+**Blank page in browser**
+1. Open browser DevTools (F12 or Cmd+Option+I)
+2. Check Console tab for JavaScript errors
+3. Check Network tab for failed requests
+4. Try hard refresh: Cmd+Shift+R (Mac) or Ctrl+Shift+R (Windows)
+
+**Build errors**
+```bash
+# Type check
+npm run typecheck
+
+# Lint
+npm run lint
+
+# Clean install
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Available Scripts
+- `npm run dev` - Start dev server (port 8080)
+- `npm run dev:port` - Start with custom port via PORT env var
+- `npm run dev:stack` - Start with Redis Docker backend
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run typecheck` - TypeScript type checking
+- `npm run health` - Quick health check
 
 **Edit a file directly in GitHub**
 
