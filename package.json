@@ -19,7 +19,13 @@
     "seed:redis": "tsx server/workers/seed.ts",
     "health": "curl -s http://localhost:8080/health.html | grep -o '<h1>.*</h1>' || echo 'Health check failed'",
     "redis:up": "docker-compose up -d redis",
-    "redis:down": "docker-compose down"
+    "redis:down": "docker-compose down",
+    "worker:rules": "tsx tools/workers/rules.ts",
+    "worker:actions": "tsx tools/workers/actions.ts",
+    "ingest:demo": "tsx tools/ingest/live-feeds.ts --source=demo --function=mixing",
+    "ingest:iot23": "tsx tools/ingest/live-feeds.ts --source=iot23 --path=tools/datasets/iot23.csv --speed=1 --loop --function=iot_edge",
+    "ingest:abuseipdb": "tsx tools/ingest/live-feeds.ts --source=abuseipdb --intervalMs=300000 --function=soc",
+    "ingest:otx": "tsx tools/ingest/live-feeds.ts --source=otx --intervalMs=600000 --function=soc"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
