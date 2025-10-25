@@ -24,8 +24,9 @@
     "worker:actions": "tsx tools/workers/actions.ts",
     "ingest:demo": "tsx tools/ingest/live-feeds.ts --source=demo --function=mixing",
     "ingest:iot23": "tsx tools/ingest/live-feeds.ts --source=iot23 --path=tools/datasets/iot23.csv --speed=1 --loop --function=iot_edge",
-    "ingest:abuseipdb": "tsx tools/ingest/live-feeds.ts --source=abuseipdb --intervalMs=300000 --function=soc",
-    "ingest:otx": "tsx tools/ingest/live-feeds.ts --source=otx --intervalMs=600000 --function=soc"
+    "ingest:abuseipdb": "ABUSEIPDB_API_KEY=9e3b8810539dc8340b27d23d82961b0bf9143d8da6c5e03ef97d3ed24920aec7974548a11b665186 tsx tools/ingest/abuseipdb.ts",
+    "ingest:otx": "OTX_API_KEY=46a81596861e5200574cffe7603b6eb9606537ae2ec87490128e2468ba99a12d tsx tools/ingest/otx.ts",
+    "ingest:feeds": "concurrently \"npm run ingest:abuseipdb\" \"npm run ingest:otx\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

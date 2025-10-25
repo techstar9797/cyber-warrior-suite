@@ -9,7 +9,7 @@ import { SeverityBadge } from '@/components/SeverityBadge';
 import { VectorTag } from '@/components/VectorTag';
 import { AssetChip } from '@/components/AssetChip';
 import { IncidentDrawer } from '@/components/IncidentDrawer';
-import { Search } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low'];
@@ -33,9 +33,6 @@ export default function Incidents() {
 
   useEffect(() => {
     loadIncidents();
-    // Auto-refresh every 5 seconds to show new incidents
-    const interval = setInterval(loadIncidents, 5000);
-    return () => clearInterval(interval);
   }, [searchQuery, selectedSeverities, selectedVectors]);
 
   const loadIncidents = async () => {
@@ -72,7 +69,10 @@ export default function Incidents() {
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Incidents</h2>
           <div className="flex gap-2">
-            <Badge variant="outline" className="font-mono">Live</Badge>
+            <Button onClick={loadIncidents} disabled={loading} variant="outline" size="sm">
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </Button>
             <Badge variant="secondary">{incidents.length} results</Badge>
           </div>
         </div>
