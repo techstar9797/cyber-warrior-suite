@@ -17,10 +17,11 @@ export default function Overview() {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [refreshKey]);
 
   const loadDashboardData = async () => {
     const timestamp = Date.now();
@@ -45,8 +46,10 @@ export default function Overview() {
       });
       if (response.ok) {
         console.log('✅ Feed refreshed');
-        // Reload dashboard data
+        // Reload dashboard data with cache busting
         await loadDashboardData();
+        // Force refresh of all KPIs
+        setRefreshKey(prev => prev + 1);
       }
     } catch (error) {
       console.error('Failed to refresh feed:', error);

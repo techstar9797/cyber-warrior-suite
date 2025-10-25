@@ -79,6 +79,14 @@ export default function AgentRuns() {
     return icons[agentId] || '🤖';
   }
 
+  function getAgentDisplayName(agentId: string): string {
+    // Map detector agents to friendly names
+    if (agentId.includes('detector')) {
+      return 'Detector';
+    }
+    return agentId;
+  }
+
   return (
     <Layout>
       <div className="space-y-6 animate-fade-in">
@@ -155,7 +163,7 @@ export default function AgentRuns() {
                             </div>
                             <div className="pb-4">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium">{step.agentId}</span>
+                                <span className="font-medium">{getAgentDisplayName(step.agentId)}</span>
                                 <Badge variant="outline" className="text-xs">
                                   {step.type}
                                 </Badge>
