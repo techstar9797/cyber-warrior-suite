@@ -23,9 +23,10 @@ export default function Overview() {
   }, []);
 
   const loadDashboardData = async () => {
+    const timestamp = Date.now();
     const [kpisData, incidents] = await Promise.all([
       getDashboardKpis(),
-      getIncidents({ pageSize: 10 }),
+      getIncidents({ pageSize: 10, _cache: timestamp.toString() }),
     ]);
     setKpis(kpisData);
     setRecentIncidents(incidents);

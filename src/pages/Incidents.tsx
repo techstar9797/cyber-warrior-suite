@@ -38,10 +38,13 @@ export default function Incidents() {
 
   const loadIncidents = async () => {
     setLoading(true);
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
     const data = await getIncidents({
       q: searchQuery || undefined,
       severity: selectedSeverities.length > 0 ? selectedSeverities : undefined,
       vector: selectedVectors.length > 0 ? selectedVectors : undefined,
+      _cache: timestamp.toString(), // Bypass cache
     });
     // Sort by lastSeen descending (newest first)
     data.sort((a, b) => new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime());

@@ -5,6 +5,11 @@ const router = Router();
 
 // GET /api/incidents?id=... or GET /api/incidents with filters
 router.get('/', async (req, res) => {
+  // Disable caching for fresh data
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  
   try {
     const redis = await getRedis();
     const { id, q, severity, vector, protocol, zone, role, page = '1', pageSize = '50' } = req.query;
@@ -40,6 +45,12 @@ router.get('/', async (req, res) => {
       const incidents = await Promise.all(
         keys.map(async (key) => await redis.json.get(key))
       );
+      
+      // Sort by lastSeen descending (newest first)
+      incidents.sort((a: any, b: any) => {
+        return new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime();
+      });
+      
       res.json({ total: incidents.length, items: incidents });
     }
   } catch (error) {
