@@ -75,3 +75,53 @@ export interface TopologyEdge {
   to: string;
   label?: string;
 }
+
+export type AgentRole = 'detector' | 'analyzer' | 'planner' | 'executor' | 'notifier';
+export type ToolKind = 'slack' | 'sheets' | 'jira' | 'pagerduty' | 'webhook' | 'custom';
+
+export interface Agent {
+  id: string;
+  name: string;
+  role: AgentRole;
+  description?: string;
+  status: 'idle' | 'running' | 'degraded';
+  avatar?: string;
+}
+
+export interface ToolCall {
+  id: string;
+  tool: ToolKind;
+  action: string;
+  argsPreview: string;
+  status: 'success' | 'error' | 'pending';
+  ts: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface AgentMessage {
+  id: string;
+  fromAgentId: string;
+  toAgentId?: string;
+  kind: 'observation' | 'reasoning' | 'plan' | 'command' | 'result' | 'error';
+  text: string;
+  ts: string;
+}
+
+export interface AgentRun {
+  id: string;
+  incidentId: string;
+  startedAt: string;
+  endedAt?: string;
+  agents: string[];
+  steps: Array<{
+    id: string;
+    agentId: string;
+    type: 'detect' | 'analyze' | 'decide' | 'act' | 'notify';
+    summary: string;
+    ts: string;
+    toolCalls?: ToolCall[];
+    messages?: AgentMessage[];
+    attachments?: Array<{ kind: 'evidence' | 'chart' | 'diff'; label: string; url?: string }>;
+  }>;
+  outcome: 'noop' | 'mitigated' | 'escalated' | 'failed';
+}
