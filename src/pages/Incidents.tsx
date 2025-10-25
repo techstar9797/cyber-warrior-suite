@@ -30,6 +30,7 @@ export default function Incidents() {
   const [selectedVectors, setSelectedVectors] = useState<Vector[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadIncidents();
@@ -63,15 +64,37 @@ export default function Incidents() {
     setDrawerOpen(true);
   };
 
+  const handleRefreshFeed = async () => {
+    setRefreshing(true);
+    try {
+      const response = await fetch('http://localhost:3001/api/ingest/refresh', {
+        method: 'POST',
+      });
+      if (response.ok) {
+        console.log('✅ Feed refreshed');
+        // Reload incidents after refresh
+        await loadIncidents();
+      }
+    } catch (error) {
+      console.error('Failed to refresh feed:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Incidents</h2>
           <div className="flex gap-2">
+            <Button onClick={handleRefreshFeed} disabled={refreshing} variant="default" size="sm">
+              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing Feed...' : 'Refresh Feed'}
+            </Button>
             <Button onClick={loadIncidents} disabled={loading} variant="outline" size="sm">
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              {loading ? 'Refreshing...' : 'Refresh'}
+              {loading ? 'Reloading...' : 'Reload'}
             </Button>
             <Badge variant="secondary">{incidents.length} results</Badge>
           </div>

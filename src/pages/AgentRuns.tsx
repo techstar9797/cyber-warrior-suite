@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { AgentRun } from '@/lib/types';
-import { Bot, CheckCircle, Clock, XCircle, Activity } from 'lucide-react';
+import { Bot, CheckCircle, Clock, XCircle, Activity, RefreshCw } from 'lucide-react';
 
 export default function AgentRuns() {
   const [runs, setRuns] = useState<AgentRun[]>([]);
@@ -11,15 +12,13 @@ export default function AgentRuns() {
 
   useEffect(() => {
     loadAgentRuns();
-    // Refresh every 5 seconds to show new runs
-    const interval = setInterval(loadAgentRuns, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   async function loadAgentRuns() {
+    setLoading(true);
     try {
-      // Call backend API to get agent runs
-      const response = await fetch('http://localhost:3001/api/agent-runs');
+      // Call backend API to get agent runs (limit to 20 most recent)
+      const response = await fetch('http://localhost:3001/api/agent-runs?limit=20');
       if (response.ok) {
         const data = await response.json();
         setRuns(data);
@@ -85,9 +84,13 @@ export default function AgentRuns() {
       <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Agent Runs</h2>
-          <Badge variant="outline" className="font-mono">
-            Live
-          </Badge>
+          <div className="flex gap-2">
+            <Button onClick={loadAgentRuns} disabled={loading} variant="outline" size="sm">
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? 'Loading...' : 'Refresh'}
+            </Button>
+            <Badge variant="secondary">{runs.length} runs</Badge>
+          </div>
         </div>
 
         <Card>
