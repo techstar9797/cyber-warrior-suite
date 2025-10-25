@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Home, AlertTriangle, Package, Network, Search, Settings } from 'lucide-react';
+import { Home, AlertTriangle, Package, Network, Search, Settings, Bot } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,6 +12,7 @@ export function Layout({ children }: LayoutProps) {
   const navItems = [
     { path: '/', label: 'Overview', icon: Home },
     { path: '/incidents', label: 'Incidents', icon: AlertTriangle },
+    { path: '/agent-runs', label: 'Agent Runs', icon: Bot },
     { path: '/assets', label: 'Assets', icon: Package },
     { path: '/topology', label: 'Topology', icon: Network },
     { path: '/search', label: 'Search', icon: Search },

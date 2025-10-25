@@ -5,6 +5,7 @@ import incidentsRouter from './api/incidents';
 import assetsRouter from './api/assets';
 import rulesRouter from './api/rules';
 import slackRouter from './api/slack';
+import agentRunsRouter from './api/agent-runs';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use('/api/incidents', incidentsRouter);
 app.use('/api/assets', assetsRouter);
 app.use('/api/rules', rulesRouter);
 app.use('/api/slack', slackRouter);
+app.use('/api/agent-runs', agentRunsRouter);
 
 // Start server
 app.listen(PORT, () => {

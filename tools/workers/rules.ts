@@ -67,6 +67,47 @@ async function main() {
           });
           
           if (matchingRules.length > 0) {
+            // Update Agent Run with planner step
+            const runId = incident.runId || `run-${incident.id}`;
+            const runKey = `sec:run:${runId}`;
+            const exists = await r.json.get(runKey);
+            
+            if (!exists) {
+              await r.json.set(runKey, '$', {
+                id: runId,
+                incidentId: incident.id,
+                startedAt: new Date().toISOString(),
+                agents: [
+                  incident.detector || 'Detector',
+                  'Planner',
+                  'Executor',
+                ],
+                steps: [],
+                outcome: 'pending',
+              });
+            }
+            
+            // Add planner step (rule evaluation)
+            await r.json.arrAppend(runKey, '$.steps', [
+              {
+                id: `step-${Date.now()}`,
+                agentId: 'Planner',
+                type: 'evaluate',
+                summary: `Matched ${matchingRules.length} rule(s)`,
+                ts: new Date().toISOString(),
+                toolCalls: [
+                  {
+                    id: `tc-${Date.now()}`,
+                    tool: 'rules_engine',
+                    action: 'evaluate',
+                    argsPreview: `rules=${matchingRules.map((r: any) => r.name).join(',')}`,
+                    status: 'success',
+                    ts: new Date().toISOString(),
+                  },
+                ],
+              },
+            ]);
+            
             for (const rule of matchingRules) {
               await r.xAdd('sec:alerts', '*', {
                 alert: JSON.stringify({

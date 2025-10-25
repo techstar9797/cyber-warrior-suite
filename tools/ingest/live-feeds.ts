@@ -52,31 +52,44 @@ async function runDemo(r: any, opts: Opts) {
   const assetName = opts.asset || 'PLC P-401';
   console.log(`🎲 Demo ingestor started for function: ${fn}`);
   
+  const incidentTypes = [
+    { vector: 'unauthorized_write', severity: 'critical' as const, protocol: 'ModbusTCP' },
+    { vector: 'dos', severity: 'critical' as const, protocol: 'TCP' },
+    { vector: 'scanning', severity: 'high' as const, protocol: 'TCP' },
+    { vector: 'mqtt_anomaly', severity: 'medium' as const, protocol: 'MQTT' },
+    { vector: 'protocol_anomaly', severity: 'low' as const, protocol: 'HTTP' },
+  ];
+  
   while (true) {
-    // Nominal heartbeat
-    await wait(2000 / opts.speed);
+    // Generate incident every 5 seconds
+    await wait(5000 / opts.speed);
     
-    // Random anomaly every ~30-60s
-    if (Math.random() < 0.15) {
-      const id = `INC-${uid('demo', fn, Date.now().toString())}`;
-      const now = nowIso();
-      const inc: IncidentInput = {
-        id,
-        functionName: fn,
-        asset: { id: 'PLC-P401', name: assetName, zone: fn, role: 'PLC' },
-        protocol: 'ModbusTCP',
-        vector: 'unauthorized_write',
-        severity: 'critical',
-        details: { functionCode: 6, register: 40012, prev: 120, next: 950, unit: 'RPM' },
-        firstSeen: now,
-        lastSeen: now,
-        count: 1,
-        detector: 'agent-detector-ot',
-        runId: `run-${uid(id)}`,
-        status: 'open',
-      };
-      await publishIncident(r, inc);
-    }
+    const incidentType = incidentTypes[Math.floor(Math.random() * incidentTypes.length)];
+    const id = `INC-${uid('demo', fn, Date.now().toString())}`;
+    const now = nowIso();
+    
+    const inc: IncidentInput = {
+      id,
+      functionName: fn,
+      asset: { id: 'PLC-P401', name: assetName, zone: fn, role: 'PLC' },
+      protocol: incidentType.protocol,
+      vector: incidentType.vector,
+      severity: incidentType.severity,
+      details: {
+        functionCode: Math.floor(Math.random() * 10) + 1,
+        register: 40000 + Math.floor(Math.random() * 100),
+        value: Math.floor(Math.random() * 1000),
+        unit: 'RPM',
+      },
+      firstSeen: now,
+      lastSeen: now,
+      count: 1,
+      detector: 'agent-detector-ot',
+      runId: `run-${uid(id)}`,
+      status: 'open',
+    };
+    
+    await publishIncident(r, inc);
   }
 }
 

@@ -79,28 +79,34 @@ async function main() {
             });
           }
 
-          // Add step
-          await r.json.arrAppend(runKey, '$.steps', [
-            {
-              id: `step-${Date.now()}`,
-              agentId: 'Executor',
-              type: 'notify',
-              summary: result.simulated
-                ? 'Slack notification simulated'
-                : 'Slack notification sent',
-              ts: new Date().toISOString(),
-              toolCalls: [
-                {
-                  id: `tc-${Date.now()}`,
-                  tool: 'slack',
-                  action: 'postMessage',
-                  argsPreview: `channel=#ot-soc`,
-                  status: 'success',
-                  ts: new Date().toISOString(),
-                },
-              ],
-            },
-          ]);
+          // Add executor step with agent attribution
+          const executorStep = {
+            id: `step-${Date.now()}`,
+            agentId: 'Executor',
+            agentName: 'action-executor',
+            type: 'notify',
+            summary: result.simulated
+              ? 'Slack notification simulated'
+              : 'Slack notification sent to #ot-soc',
+            ts: new Date().toISOString(),
+            toolCalls: [
+              {
+                id: `tc-${Date.now()}`,
+                tool: 'slack',
+                action: 'postMessage',
+                argsPreview: `channel=#ot-soc, rule=${incident.rule || 'Unknown'}`,
+                status: 'success',
+                ts: new Date().toISOString(),
+                agentId: 'Executor',
+                agentName: 'action-executor',
+              },
+            ],
+          };
+          
+          await r.json.arrAppend(runKey, '$.steps', [executorStep]);
+          
+          // Update outcome to mitigated
+          await r.json.set(runKey, '$.outcome', 'mitigated');
 
           await r.xAck('sec:alerts', GROUP, msg.id);
         }
