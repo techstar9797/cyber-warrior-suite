@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { KpiCard } from '@/components/KpiCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { getDashboardKpis, getIncidents, DashboardKpis } from '@/lib/mock';
 import { Incident } from '@/lib/types';
-import { AlertCircle, Activity, Clock, TrendingUp } from 'lucide-react';
+import { AlertCircle, Activity, Clock, TrendingUp, RefreshCw } from 'lucide-react';
 import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { AssetChip } from '@/components/AssetChip';
@@ -15,17 +16,42 @@ export default function Overview() {
   const [recentIncidents, setRecentIncidents] = useState<Incident[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    Promise.all([getDashboardKpis(), getIncidents({ pageSize: 10 })]).then(([kpisData, incidents]) => {
-      setKpis(kpisData);
-      setRecentIncidents(incidents);
-    });
+    loadDashboardData();
   }, []);
+
+  const loadDashboardData = async () => {
+    const [kpisData, incidents] = await Promise.all([
+      getDashboardKpis(),
+      getIncidents({ pageSize: 10 }),
+    ]);
+    setKpis(kpisData);
+    setRecentIncidents(incidents);
+  };
 
   const handleIncidentClick = (incident: Incident) => {
     setSelectedIncident(incident);
     setDrawerOpen(true);
+  };
+
+  const handleRefreshFeed = async () => {
+    setRefreshing(true);
+    try {
+      const response = await fetch('http://localhost:3001/api/ingest/refresh', {
+        method: 'POST',
+      });
+      if (response.ok) {
+        console.log('✅ Feed refreshed');
+        // Reload dashboard data
+        await loadDashboardData();
+      }
+    } catch (error) {
+      console.error('Failed to refresh feed:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   if (!kpis) {
@@ -52,6 +78,15 @@ export default function Overview() {
   return (
     <Layout>
       <div className="space-y-6 animate-fade-in">
+        {/* Header with Refresh */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold">Overview</h2>
+          <Button onClick={handleRefreshFeed} disabled={refreshing} variant="default" size="sm">
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh Feed'}
+          </Button>
+        </div>
+
         {/* KPIs */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <KpiCard title="Open Incidents" value={kpis.open} icon={AlertCircle} trend="Requires attention" />

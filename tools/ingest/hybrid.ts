@@ -139,25 +139,67 @@ async function ingestHybridBatch() {
   console.log('🔄 Hybrid Ingestor - Fetching mixed incidents...');
   const r = await getRedis();
   
-  // Generate a mix: 70% synthetic OT/ICS, 30% live threat intel
-  const syntheticCount = 7;
-  const liveThreats = await fetchLiveThreatSample();
-  const synthetic = await generateSyntheticIncidents(syntheticCount);
+  // Generate 1-2 incidents: 90% synthetic, 10% live
+  const totalCount = Math.random() > 0.5 ? 2 : 1;
+  const useLive = Math.random() < 0.1; // 10% chance of live data
   
-  const allIncidents = [...synthetic, ...liveThreats];
+  let allIncidents: any[] = [];
   
-  console.log(`📊 Batch: ${synthetic.length} synthetic + ${liveThreats.length} live threats`);
-  
-  // Shuffle for variety
-  allIncidents.sort(() => Math.random() - 0.5);
+  if (useLive) {
+    // Fetch 1 live threat
+    const liveThreats = await fetchLiveThreatSample();
+    if (liveThreats.length > 0) {
+      allIncidents = [liveThreats[0]];
+      console.log(`📊 Batch: 1 live threat`);
+    } else {
+      // Fallback to synthetic if live fetch fails
+      allIncidents = await generateSyntheticIncidents(1);
+      console.log(`📊 Batch: 1 synthetic (live fetch failed)`);
+    }
+  } else {
+    // Generate synthetic incidents
+    allIncidents = await generateSyntheticIncidents(totalCount);
+    console.log(`📊 Batch: ${totalCount} synthetic`);
+  }
   
   for (const inc of allIncidents) {
+    // Create initial detector step in Agent Run
+    const runId = inc.runId;
+    const runKey = `sec:run:${runId}`;
+    
+    await r.json.set(runKey, '$', {
+      id: runId,
+      incidentId: inc.id,
+      startedAt: new Date().toISOString(),
+      agents: [inc.detector, 'Planner', 'Executor'],
+      steps: [
+        {
+          id: `step-detect-${Date.now()}`,
+          agentId: inc.detector,
+          type: 'detect',
+          summary: `Detected ${inc.vector} on ${inc.asset.name}`,
+          ts: new Date().toISOString(),
+          toolCalls: [
+            {
+              id: `tc-${Date.now()}`,
+              tool: 'protocol_analyzer',
+              action: 'detect',
+              argsPreview: `vector=${inc.vector}, severity=${inc.severity}`,
+              status: 'success',
+              ts: new Date().toISOString(),
+            },
+          ],
+        },
+      ],
+      outcome: 'pending',
+    });
+    
     await r.json.set(`sec:incident:${inc.id}`, '$', inc);
     await r.xAdd('sec:events', '*', { data: JSON.stringify(inc) });
     console.log(`→ ${inc.id} ${inc.vector} (${inc.severity}) [${inc.detector}]`);
   }
   
-  console.log(`✅ Ingested ${allIncidents.length} hybrid incidents`);
+  console.log(`✅ Ingested ${allIncidents.length} hybrid incident(s)`);
 }
 
 // Run once when called
