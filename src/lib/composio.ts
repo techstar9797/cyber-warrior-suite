@@ -1,9 +1,28 @@
 import { Incident, RuleDef } from './types';
+import { composioAPI } from './api/composio';
+import { config } from './config';
 
-// Phase 2 stub: simulate success and log payload to console
-// TODO: Phase 3 - Implement actual Composio integration
+// Real Composio integration with fallback to stub
 export async function postIncidentToSlack(incident: Incident, channel?: string): Promise<{ ok: boolean; simulated: boolean }> {
-  // Phase 2 stub: simulate success and log payload to console
+  // Try real API if configured
+  if (config.features.enableComposio && config.apis.composio.apiKey) {
+    try {
+      const channelName = channel || '#ot-soc';
+      const response = await composioAPI.postToSlackChannel(
+        channelName,
+        formatSlackMessageText(incident)
+      );
+
+      if (response.success) {
+        return { ok: true, simulated: false };
+      }
+    } catch (error) {
+      console.error('Failed to send Slack message via Composio:', error);
+      // Fall through to stub
+    }
+  }
+
+  // Fallback to stub
   const message = formatSlackMessage(incident, channel);
   console.log('SLACK STUB →', message);
 
@@ -110,10 +129,27 @@ Source: ${incident.source}`,
   };
 }
 
-// Placeholder functions for Phase 3 implementation
+// Real rule execution with Composio integration
 export async function executeRuleActions(rule: RuleDef, incident: Incident): Promise<void> {
-  // TODO: Phase 3 - Execute actions defined in rules
-  console.log(`TODO: Execute actions for rule "${rule.name}":`, rule.actions);
+  // Try real API if configured
+  if (config.features.enableComposio && config.apis.composio.apiKey) {
+    try {
+      const results = await composioAPI.executeRule(rule, incident);
+      console.log(`Executed ${results.length} actions for rule "${rule.name}"`);
+      results.forEach(result => {
+        if (result.status === 'failed') {
+          console.error(`Action ${result.actionId} failed:`, result.error);
+        }
+      });
+      return;
+    } catch (error) {
+      console.error('Failed to execute rule via Composio:', error);
+      // Fall through to stub
+    }
+  }
+
+  // Fallback to stub
+  console.log(`STUB: Execute actions for rule "${rule.name}":`, rule.actions);
 
   for (const action of rule.actions) {
     await executeAction(action, incident);
@@ -121,19 +157,49 @@ export async function executeRuleActions(rule: RuleDef, incident: Incident): Pro
 }
 
 async function executeAction(action: string, incident: Incident): Promise<void> {
-  // TODO: Phase 3 - Parse and execute individual actions
-  console.log(`TODO: Execute action "${action}" for incident ${incident.id}`);
+  console.log(`STUB: Execute action "${action}" for incident ${incident.id}`);
 
   if (action.startsWith('slack:')) {
     const channel = action.replace('slack:', '');
     await postIncidentToSlack(incident, channel);
   } else if (action.startsWith('email:')) {
-    console.log(`TODO: Send email to ${action.replace('email:', '')}`);
+    console.log(`STUB: Send email to ${action.replace('email:', '')}`);
   } else if (action === 'block') {
-    console.log('TODO: Execute network block action');
+    console.log('STUB: Execute network block action');
   } else if (action === 'quarantine') {
-    console.log('TODO: Execute asset quarantine action');
+    console.log('STUB: Execute asset quarantine action');
   } else if (action.startsWith('alert:')) {
-    console.log(`TODO: Send alert to ${action.replace('alert:', '')}`);
+    console.log(`STUB: Send alert to ${action.replace('alert:', '')}`);
   }
+}
+
+function formatSlackMessageText(incident: Incident): string {
+  const severityEmoji = {
+    critical: '🔴',
+    high: '🟠',
+    medium: '🟡',
+    low: '⚪',
+  }[incident.severity];
+
+  const vectorLabel = incident.vector.replace(/_/g, ' ').toUpperCase();
+
+  let detailsStr = '';
+  if (incident.details) {
+    const details = incident.details as Record<string, unknown>;
+    if (details.functionCode) {
+      detailsStr = `\nFunction: ${details.functionCode}  |  Register: ${details.register}`;
+      if (details.prevValue !== undefined) {
+        detailsStr += `\nDetails: prev=${details.prevValue} → new=${details.newValue} ${details.unit || ''}`;
+      }
+    } else if (details.mqttTopic) {
+      detailsStr = `\nTopic: ${details.mqttTopic}  |  Rate: ${details.ratePerMin}/min (normal: ${details.normalRate})`;
+    } else if (details.srcIP) {
+      detailsStr = `\nSrc: ${details.srcIP} → Dest: ${details.destIP}:${details.destPort}`;
+    }
+  }
+
+  return `${severityEmoji} [${incident.severity.toUpperCase()}] ${vectorLabel} on ${incident.asset.name} (${incident.asset.zone})
+Protocol: ${incident.protocol || 'N/A'}${detailsStr}
+First: ${incident.firstSeen}  Last: ${incident.lastSeen}  Count: ${incident.count}
+Source: ${incident.source}`;
 }
