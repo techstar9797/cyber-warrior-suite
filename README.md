@@ -144,6 +144,29 @@ This project is built with:
 
 Phase 2 replaces the mock JSON data with a Redis backend while maintaining the same API contracts.
 
+### Quick Start
+
+**Option 1: Frontend only (Mock mode)**
+```bash
+npm run dev
+# App available at http://localhost:8080
+```
+
+**Option 2: Full stack (Redis + Backend API)**
+```bash
+# Terminal 1: Start Redis
+npm run redis:up
+
+# Terminal 2: Seed Redis
+npm run seed:redis
+
+# Terminal 3: Start backend API
+npm run dev:backend
+
+# Terminal 4: Start frontend
+npm run dev
+```
+
 ### Redis Setup
 
 1. **Start Redis Stack:**

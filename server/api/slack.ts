@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getRedis } from '../lib/redis';
+import { sendSlackNotification } from '../lib/slack';
 
 const router = Router();
 
@@ -14,24 +15,8 @@ router.post('/notify', async (req, res) => {
       return res.status(404).json({ error: 'Incident not found' });
     }
 
-    // Get or create Slack metadata
-    const metaKey = `sec:incident:${incidentId}:slack`;
-    let meta = await redis.json.get(metaKey) as any;
-
-    if (!meta?.ts) {
-      // Simulate first Slack post
-      const ts = Date.now().toString();
-      meta = { channelId: '#ot-soc', ts };
-      await redis.json.set(metaKey, '$', meta);
-      
-      console.log(`📢 Slack [NEW]: Incident ${incidentId} posted to ${meta.channelId}`);
-      console.log(`   Thread TS: ${ts}`);
-    } else {
-      // Simulate thread reply
-      console.log(`📢 Slack [UPDATE]: Incident ${incidentId} - ${eventType}`);
-      console.log(`   Message: ${message || 'No message'}`);
-      console.log(`   Thread TS: ${meta.ts}`);
-    }
+    // Send Slack notification
+    const result = await sendSlackNotification({ incidentId, message, eventType });
 
     // Update Agent Run
     const runId = `run-${incidentId}`;
@@ -54,19 +39,19 @@ router.post('/notify', async (req, res) => {
       id: `step-${Date.now()}`,
       agentId: 'Executor',
       type: 'notify',
-      summary: 'Slack notification sent',
+      summary: result.simulated ? 'Slack notification simulated' : 'Slack notification sent',
       ts: new Date().toISOString(),
       toolCalls: [{
         id: `tc-${Date.now()}`,
         tool: 'slack',
         action: 'postMessage',
-        argsPreview: `channel=${meta.channelId}`,
+        argsPreview: `channel=#ot-soc`,
         status: 'success',
         ts: new Date().toISOString()
       }]
     }]);
 
-    res.json({ ok: true, ts: meta.ts, simulated: !process.env.COMPOSIO_API_KEY });
+    res.json(result);
   } catch (error) {
     console.error('Error sending Slack notification:', error);
     res.status(500).json({ error: 'Failed to send notification' });

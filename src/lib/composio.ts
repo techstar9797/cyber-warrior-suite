@@ -4,22 +4,24 @@ import { config } from './config';
 
 // Real Composio integration with fallback to stub
 export async function postIncidentToSlack(incident: Incident, channel?: string): Promise<{ ok: boolean; simulated: boolean }> {
-  // Try real API if configured
-  if (config.features.enableComposio && config.apis.composio.apiKey) {
-    try {
-      const channelName = channel || '#ot-soc';
-      const response = await composioAPI.postToSlackChannel(
-        channelName,
-        formatSlackMessageText(incident)
-      );
+  // Try backend API first
+  try {
+    const response = await fetch('http://localhost:3001/api/slack/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        incidentId: incident.id,
+        message: `Incident ${incident.id} - ${incident.vector}`,
+        eventType: 'NOTIFICATION',
+      }),
+    });
 
-      if (response.success) {
-        return { ok: true, simulated: false };
-      }
-    } catch (error) {
-      console.error('Failed to send Slack message via Composio:', error);
-      // Fall through to stub
+    if (response.ok) {
+      const result = await response.json();
+      return result;
     }
+  } catch (error) {
+    console.warn('Backend API not available, using stub:', error);
   }
 
   // Fallback to stub
