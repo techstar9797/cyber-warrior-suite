@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    { "id": "it-zone", "label": "IT Network", "kind": "zone", "x": 100, "y": 100 },
+    { "id": "boundary", "label": "IT/OT Boundary", "kind": "boundary", "x": 300, "y": 100 },
+    { "id": "dmz-zone", "label": "DMZ", "kind": "zone", "x": 500, "y": 100 },
+    { "id": "cell1-zone", "label": "Cell 1 / Mixing", "kind": "zone", "x": 700, "y": 50 },
+    { "id": "cell2-zone", "label": "Cell 2 / Packaging", "kind": "zone", "x": 700, "y": 200 },
+    { "id": "gw-301", "label": "GW-301", "kind": "asset", "x": 500, "y": 150 },
+    { "id": "historian-001", "label": "H-001", "kind": "asset", "x": 500, "y": 50 },
+    { "id": "plc-401", "label": "PLC P-401", "kind": "asset", "x": 850, "y": 30 },
+    { "id": "plc-405", "label": "PLC P-405", "kind": "asset", "x": 850, "y": 70 },
+    { "id": "rtu-102", "label": "RTU R-102", "kind": "asset", "x": 750, "y": 50 },
+    { "id": "hmi-501", "label": "HMI H-501", "kind": "asset", "x": 650, "y": 50 },
+    { "id": "sensor-205", "label": "VS-205", "kind": "asset", "x": 800, "y": 200 },
+    { "id": "ipc-210", "label": "IPC I-210", "kind": "asset", "x": 650, "y": 200 }
+  ],
+  "edges": [
+    { "from": "it-zone", "to": "boundary", "label": "Firewall" },
+    { "from": "boundary", "to": "dmz-zone", "label": "Filtered" },
+    { "from": "dmz-zone", "to": "gw-301", "label": "OPC-UA" },
+    { "from": "dmz-zone", "to": "historian-001", "label": "OPC-UA" },
+    { "from": "gw-301", "to": "cell1-zone", "label": "Modbus" },
+    { "from": "gw-301", "to": "cell2-zone", "label": "MQTT" },
+    { "from": "cell1-zone", "to": "hmi-501" },
+    { "from": "cell1-zone", "to": "rtu-102" },
+    { "from": "rtu-102", "to": "plc-401", "label": "Profinet" },
+    { "from": "rtu-102", "to": "plc-405", "label": "S7" },
+    { "from": "cell2-zone", "to": "ipc-210" },
+    { "from": "cell2-zone", "to": "sensor-205", "label": "MQTT" }
+  ]
+}

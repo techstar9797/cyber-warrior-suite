@@ -1,0 +1,123 @@
+[
+  {
+    "id": "plc-401",
+    "name": "PLC P-401",
+    "role": "PLC",
+    "vendor": "Siemens",
+    "model": "S7-1500",
+    "ip": "10.50.1.101",
+    "zone": "Cell 1 / Mixing",
+    "protocols": ["ModbusTCP", "S7", "Profinet"],
+    "firmware": "v2.8.3",
+    "criticality": "high",
+    "lastSeen": "2025-10-21T11:55:00Z"
+  },
+  {
+    "id": "plc-405",
+    "name": "PLC P-405",
+    "role": "PLC",
+    "vendor": "Siemens",
+    "model": "S7-1200",
+    "ip": "10.50.1.105",
+    "zone": "Cell 1 / Mixing",
+    "protocols": ["S7", "Profinet"],
+    "firmware": "v4.2.1",
+    "criticality": "high",
+    "lastSeen": "2025-10-21T11:54:00Z"
+  },
+  {
+    "id": "rtu-102",
+    "name": "RTU R-102",
+    "role": "RTU",
+    "vendor": "Schneider Electric",
+    "model": "Modicon M580",
+    "ip": "10.50.1.52",
+    "zone": "Cell 1 / Mixing",
+    "protocols": ["DNP3", "ModbusTCP"],
+    "firmware": "v2.5.0-beta",
+    "criticality": "medium",
+    "lastSeen": "2025-10-21T11:50:00Z"
+  },
+  {
+    "id": "hmi-501",
+    "name": "HMI H-501",
+    "role": "HMI",
+    "vendor": "Rockwell",
+    "model": "FactoryTalk View",
+    "ip": "10.50.1.201",
+    "zone": "Cell 1 / Mixing",
+    "protocols": ["OPCUA", "ModbusTCP"],
+    "firmware": "v13.0",
+    "criticality": "low",
+    "lastSeen": "2025-10-21T11:52:00Z"
+  },
+  {
+    "id": "sensor-205",
+    "name": "Vibration Sensor VS-205",
+    "role": "Sensor",
+    "vendor": "Honeywell",
+    "model": "VSP-4000",
+    "ip": "10.50.2.45",
+    "zone": "Cell 2 / Packaging",
+    "protocols": ["MQTT"],
+    "criticality": "medium",
+    "lastSeen": "2025-10-21T11:53:00Z",
+    "telemetry": {
+      "vibrationMMs": 2.3
+    }
+  },
+  {
+    "id": "sensor-206",
+    "name": "Temperature Sensor TS-206",
+    "role": "Sensor",
+    "vendor": "Honeywell",
+    "model": "TSP-2000",
+    "ip": "10.50.2.46",
+    "zone": "Cell 2 / Packaging",
+    "protocols": ["MQTT"],
+    "criticality": "low",
+    "lastSeen": "2025-10-21T11:55:00Z",
+    "telemetry": {
+      "tempC": 68.5
+    }
+  },
+  {
+    "id": "gw-301",
+    "name": "Gateway GW-301",
+    "role": "Gateway",
+    "vendor": "Cisco",
+    "model": "IE-4000",
+    "ip": "10.50.0.1",
+    "zone": "DMZ / IT-OT Boundary",
+    "protocols": ["ModbusTCP", "OPCUA", "MQTT"],
+    "firmware": "v15.2",
+    "criticality": "high",
+    "lastSeen": "2025-10-21T11:55:00Z"
+  },
+  {
+    "id": "ipc-210",
+    "name": "IPC I-210",
+    "role": "IPC",
+    "vendor": "Dell",
+    "model": "Edge Gateway 5200",
+    "ip": "10.50.2.110",
+    "zone": "Cell 2 / Packaging",
+    "protocols": ["OPCUA", "ModbusTCP"],
+    "firmware": "Ubuntu 20.04",
+    "criticality": "medium",
+    "lastSeen": "2025-10-21T11:48:00Z"
+  },
+  {
+    "id": "historian-001",
+    "name": "Historian H-001",
+    "role": "Historian",
+    "vendor": "OSIsoft",
+    "model": "PI System",
+    "ip": "10.50.0.10",
+    "zone": "DMZ / IT-OT Boundary",
+    "protocols": ["OPCUA", "BACnet"],
+    "firmware": "v3.4.425",
+    "criticality": "high",
+    "lastSeen": "2025-10-21T11:55:00Z"
+  }
+]

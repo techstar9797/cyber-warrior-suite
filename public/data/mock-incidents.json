@@ -1,0 +1,191 @@
+[
+  {
+    "id": "inc-001",
+    "severity": "critical",
+    "vector": "unauthorized_write",
+    "source": "controller",
+    "asset": {
+      "id": "plc-401",
+      "name": "PLC P-401",
+      "role": "PLC",
+      "ip": "10.50.1.101",
+      "zone": "Cell 1 / Mixing"
+    },
+    "protocol": "ModbusTCP",
+    "firstSeen": "2025-10-21T10:33:00Z",
+    "lastSeen": "2025-10-21T10:55:00Z",
+    "count": 5,
+    "status": "open",
+    "details": {
+      "functionCode": 6,
+      "register": 40012,
+      "prevValue": 120,
+      "newValue": 950,
+      "unit": "RPM"
+    }
+  },
+  {
+    "id": "inc-002",
+    "severity": "high",
+    "vector": "mqtt_anomaly",
+    "source": "sensor",
+    "asset": {
+      "id": "sensor-205",
+      "name": "Vibration Sensor VS-205",
+      "role": "Sensor",
+      "ip": "10.50.2.45",
+      "zone": "Cell 2 / Packaging"
+    },
+    "protocol": "MQTT",
+    "firstSeen": "2025-10-21T09:15:00Z",
+    "lastSeen": "2025-10-21T11:22:00Z",
+    "count": 18,
+    "status": "open",
+    "details": {
+      "mqttTopic": "plant/cell2/pump3/vib",
+      "ratePerMin": 480,
+      "normalRate": 60,
+      "threshold": 120
+    }
+  },
+  {
+    "id": "inc-003",
+    "severity": "critical",
+    "vector": "lateral_movement_it_ot",
+    "source": "netflow",
+    "asset": {
+      "id": "gw-301",
+      "name": "Gateway GW-301",
+      "role": "Gateway",
+      "ip": "10.50.0.1",
+      "zone": "DMZ / IT-OT Boundary"
+    },
+    "firstSeen": "2025-10-21T08:45:00Z",
+    "lastSeen": "2025-10-21T08:52:00Z",
+    "count": 3,
+    "status": "ack",
+    "details": {
+      "srcIP": "192.168.10.88",
+      "destIP": "10.50.1.101",
+      "destPort": 502,
+      "protocol": "TCP",
+      "bytes": 4582
+    }
+  },
+  {
+    "id": "inc-004",
+    "severity": "medium",
+    "vector": "firmware_change",
+    "source": "syslog",
+    "asset": {
+      "id": "rtu-102",
+      "name": "RTU R-102",
+      "role": "RTU",
+      "ip": "10.50.1.52",
+      "zone": "Cell 1 / Mixing"
+    },
+    "protocol": "DNP3",
+    "firstSeen": "2025-10-20T22:10:00Z",
+    "lastSeen": "2025-10-20T22:10:00Z",
+    "count": 1,
+    "status": "closed",
+    "details": {
+      "prevFirmware": "v2.4.1",
+      "newFirmware": "v2.5.0-beta",
+      "user": "engr_station_07"
+    }
+  },
+  {
+    "id": "inc-005",
+    "severity": "high",
+    "vector": "setpoint_tamper",
+    "source": "controller",
+    "asset": {
+      "id": "plc-405",
+      "name": "PLC P-405",
+      "role": "PLC",
+      "ip": "10.50.1.105",
+      "zone": "Cell 1 / Mixing"
+    },
+    "protocol": "S7",
+    "firstSeen": "2025-10-21T11:05:00Z",
+    "lastSeen": "2025-10-21T11:05:00Z",
+    "count": 1,
+    "status": "open",
+    "details": {
+      "parameter": "mixerSpeed",
+      "prevSetpoint": 800,
+      "newSetpoint": 1400,
+      "unit": "RPM",
+      "safeMax": 1200
+    }
+  },
+  {
+    "id": "inc-006",
+    "severity": "low",
+    "vector": "p2p_scan",
+    "source": "netflow",
+    "asset": {
+      "id": "ipc-210",
+      "name": "IPC I-210",
+      "role": "IPC",
+      "ip": "10.50.2.110",
+      "zone": "Cell 2 / Packaging"
+    },
+    "firstSeen": "2025-10-21T07:30:00Z",
+    "lastSeen": "2025-10-21T07:35:00Z",
+    "count": 12,
+    "status": "open",
+    "details": {
+      "scanType": "TCP SYN",
+      "portRange": "500-510",
+      "targetsScanned": 24
+    }
+  },
+  {
+    "id": "inc-007",
+    "severity": "medium",
+    "vector": "cleartext_protocol",
+    "source": "netflow",
+    "asset": {
+      "id": "hmi-501",
+      "name": "HMI H-501",
+      "role": "HMI",
+      "ip": "10.50.1.201",
+      "zone": "Cell 1 / Mixing"
+    },
+    "protocol": "ModbusTCP",
+    "firstSeen": "2025-10-21T10:00:00Z",
+    "lastSeen": "2025-10-21T11:30:00Z",
+    "count": 45,
+    "status": "open",
+    "details": {
+      "unencrypted": true,
+      "destPort": 502,
+      "totalBytes": 125600
+    }
+  },
+  {
+    "id": "inc-008",
+    "severity": "critical",
+    "vector": "rogue_engineer_ws",
+    "source": "netflow",
+    "asset": {
+      "id": "unknown-999",
+      "name": "Unknown Device",
+      "role": "IPC",
+      "ip": "10.50.1.250",
+      "zone": "Cell 1 / Mixing"
+    },
+    "protocol": "OPCUA",
+    "firstSeen": "2025-10-21T06:15:00Z",
+    "lastSeen": "2025-10-21T11:45:00Z",
+    "count": 87,
+    "status": "open",
+    "details": {
+      "macAddress": "00:1B:44:11:3A:B7",
+      "authenticated": false,
+      "attempts": 87
+    }
+  }
+]
