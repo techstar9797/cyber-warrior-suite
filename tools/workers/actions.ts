@@ -103,7 +103,7 @@ async function main() {
             ],
           };
           
-          await r.json.arrAppend(runKey, '$.steps', [executorStep]);
+          await r.json.arrAppend(runKey, '$.steps', executorStep);
           
           // Update outcome to mitigated
           await r.json.set(runKey, '$.outcome', 'mitigated');

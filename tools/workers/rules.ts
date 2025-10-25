@@ -88,25 +88,24 @@ async function main() {
             }
             
             // Add planner step (rule evaluation)
-            await r.json.arrAppend(runKey, '$.steps', [
-              {
-                id: `step-${Date.now()}`,
-                agentId: 'Planner',
-                type: 'evaluate',
-                summary: `Matched ${matchingRules.length} rule(s)`,
-                ts: new Date().toISOString(),
-                toolCalls: [
-                  {
-                    id: `tc-${Date.now()}`,
-                    tool: 'rules_engine',
-                    action: 'evaluate',
-                    argsPreview: `rules=${matchingRules.map((r: any) => r.name).join(',')}`,
-                    status: 'success',
-                    ts: new Date().toISOString(),
-                  },
-                ],
-              },
-            ]);
+            const plannerStep = {
+              id: `step-${Date.now()}`,
+              agentId: 'Planner',
+              type: 'evaluate',
+              summary: `Matched ${matchingRules.length} rule(s)`,
+              ts: new Date().toISOString(),
+              toolCalls: [
+                {
+                  id: `tc-${Date.now()}`,
+                  tool: 'rules_engine',
+                  action: 'evaluate',
+                  argsPreview: `rules=${matchingRules.map((r: any) => r.name).join(',')}`,
+                  status: 'success',
+                  ts: new Date().toISOString(),
+                },
+              ],
+            };
+            await r.json.arrAppend(runKey, '$.steps', plannerStep);
             
             for (const rule of matchingRules) {
               await r.xAdd('sec:alerts', '*', {

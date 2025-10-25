@@ -33,6 +33,9 @@ export default function Incidents() {
 
   useEffect(() => {
     loadIncidents();
+    // Auto-refresh every 5 seconds to show new incidents
+    const interval = setInterval(loadIncidents, 5000);
+    return () => clearInterval(interval);
   }, [searchQuery, selectedSeverities, selectedVectors]);
 
   const loadIncidents = async () => {
@@ -42,6 +45,8 @@ export default function Incidents() {
       severity: selectedSeverities.length > 0 ? selectedSeverities : undefined,
       vector: selectedVectors.length > 0 ? selectedVectors : undefined,
     });
+    // Sort by lastSeen descending (newest first)
+    data.sort((a, b) => new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime());
     setIncidents(data);
     setLoading(false);
   };
@@ -66,7 +71,10 @@ export default function Incidents() {
       <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Incidents</h2>
-          <Badge variant="secondary">{incidents.length} results</Badge>
+          <div className="flex gap-2">
+            <Badge variant="outline" className="font-mono">Live</Badge>
+            <Badge variant="secondary">{incidents.length} results</Badge>
+          </div>
         </div>
 
         {/* Filters */}
