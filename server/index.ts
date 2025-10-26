@@ -7,6 +7,7 @@ import rulesRouter from './api/rules';
 import slackRouter from './api/slack';
 import agentRunsRouter from './api/agent-runs';
 import ingestRouter from './api/ingest';
+// import aiRouter from './api/ai';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/rules', rulesRouter);
 app.use('/api/slack', slackRouter);
 app.use('/api/agent-runs', agentRunsRouter);
 app.use('/api/ingest', ingestRouter);
+// app.use('/api/ai', aiRouter);
 
 // Start server
 app.listen(PORT, () => {

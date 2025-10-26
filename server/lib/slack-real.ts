@@ -122,6 +122,7 @@ export async function getSlackStatus(): Promise<{
   workspace?: string;
   channelId?: string;
   user?: string;
+  error?: string;
 }> {
   try {
     const authTest = await slackClient.auth.test();
@@ -132,8 +133,13 @@ export async function getSlackStatus(): Promise<{
       channelId: OT_SOC_CHANNEL,
       user: authTest.user as string,
     };
-  } catch (error) {
-    return { connected: false };
+  } catch (error: any) {
+    console.error('Slack auth test failed:', error.message);
+    return { 
+      connected: false, 
+      error: error.message || 'Unknown error',
+      channelId: OT_SOC_CHANNEL 
+    };
   }
 }
 

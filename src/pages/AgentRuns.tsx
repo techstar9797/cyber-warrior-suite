@@ -17,14 +17,19 @@ export default function AgentRuns() {
   async function loadAgentRuns() {
     setLoading(true);
     try {
+      console.log('Loading agent runs...');
       // Call backend API to get agent runs (limit to 20 most recent)
       const response = await fetch('http://localhost:3001/api/agent-runs?limit=20');
+      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Agent runs data:', data.length, 'runs');
         setRuns(data);
+      } else {
+        console.error('Failed to fetch agent runs:', response.status, response.statusText);
       }
     } catch (error) {
-      console.warn('Agent runs API not available:', error);
+      console.error('Agent runs API error:', error);
     } finally {
       setLoading(false);
     }
@@ -100,6 +105,25 @@ export default function AgentRuns() {
             <Badge variant="secondary">{runs.length} runs</Badge>
           </div>
         </div>
+
+        {loading && (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-muted-foreground">Loading agent runs...</p>
+          </div>
+        )}
+
+        {!loading && runs.length === 0 && (
+          <div className="text-center py-8">
+            <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Agent Runs Found</h3>
+            <p className="text-muted-foreground mb-4">No agent activity has been recorded yet.</p>
+            <Button onClick={loadAgentRuns} variant="outline">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
+        )}
 
         <Card>
           <CardHeader>

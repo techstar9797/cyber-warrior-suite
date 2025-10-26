@@ -97,6 +97,9 @@ export default function Settings() {
                       <p className="text-sm">
                         <strong>User:</strong> {slackStatus.user || 'sachin.news'}
                       </p>
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Status:</strong> {slackStatus.error ? `Error: ${slackStatus.error}` : 'Connected'}
+                      </p>
                       <Button variant="outline" size="sm" asChild>
                         <a href="https://app.slack.com/client/T09PGV93SRE/C09NSLFG2GL" target="_blank" rel="noopener noreferrer">
                           Open Slack Channel
@@ -109,7 +112,7 @@ export default function Settings() {
                         Configure Slack
                       </Button>
                       <p className="text-xs text-muted-foreground mt-2">
-                        Set SLACK_ACCESS_TOKEN environment variable to enable
+                        {slackStatus?.error ? `Error: ${slackStatus.error}` : 'Set SLACK_ACCESS_TOKEN environment variable to enable'}
                       </p>
                     </>
                   )}
