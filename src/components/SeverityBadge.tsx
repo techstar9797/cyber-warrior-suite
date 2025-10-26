@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Severity } from '@/lib/types';
 
 interface SeverityBadgeProps {
-  severity: Severity;
+  severity: Severity | undefined;
 }
 
 export function SeverityBadge({ severity }: SeverityBadgeProps) {
@@ -13,12 +13,14 @@ export function SeverityBadge({ severity }: SeverityBadgeProps) {
     low: { className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200', emoji: '⚪' },
   };
 
-  const { className, emoji } = variants[severity];
+  // Handle undefined or invalid severity values
+  const validSeverity = severity && variants[severity] ? severity : 'low';
+  const { className, emoji } = variants[validSeverity];
 
   return (
     <Badge className={className}>
       <span className="mr-1">{emoji}</span>
-      {severity.toUpperCase()}
+      {validSeverity.toUpperCase()}
     </Badge>
   );
 }

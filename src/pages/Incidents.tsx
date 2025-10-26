@@ -173,9 +173,9 @@ export default function Incidents() {
               </div>
             ) : (
               <div className="space-y-2">
-                {incidents.map((incident) => (
+                {incidents.map((incident, index) => (
                   <div
-                    key={incident.id}
+                    key={`incident-${incident.id}-${index}`}
                     className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
                     onClick={() => handleRowClick(incident)}
                   >
