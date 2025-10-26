@@ -68,7 +68,8 @@ export default function AgentRuns() {
     }
   }
 
-  function getAgentIcon(agentId: string) {
+  function getAgentIcon(agentId: string | undefined) {
+    if (!agentId) return '🤖';
     const icons: Record<string, string> = {
       'Detector': '🔍',
       'Planner': '📋',
@@ -84,8 +85,9 @@ export default function AgentRuns() {
     return icons[agentId] || '🤖';
   }
 
-  function getAgentDisplayName(agentId: string): string {
+  function getAgentDisplayName(agentId: string | undefined): string {
     // Map detector agents to friendly names
+    if (!agentId) return 'Unknown';
     if (agentId.includes('detector')) {
       return 'Detector';
     }
