@@ -181,7 +181,7 @@ export default function AgentRuns() {
                       <div className="space-y-3">
                         <h4 className="text-sm font-semibold">Timeline</h4>
                         {run.steps.map((step, idx) => (
-                          <div key={step.id} className="relative pl-8 border-l-2 border-muted">
+                          <div key={`${run.id}-step-${idx}-${step.id}`} className="relative pl-8 border-l-2 border-muted">
                             <div className="absolute -left-3 top-0">
                               <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
                                 {getAgentIcon(step.agentId)}
@@ -202,8 +202,8 @@ export default function AgentRuns() {
                               {/* Tool calls */}
                               {step.toolCalls && step.toolCalls.length > 0 && (
                                 <div className="ml-4 space-y-1">
-                                  {step.toolCalls.map((toolCall) => (
-                                    <div key={toolCall.id} className="text-xs bg-muted/50 rounded px-2 py-1">
+                                  {step.toolCalls.map((toolCall, toolIdx) => (
+                                    <div key={`${run.id}-${step.id}-tool-${toolIdx}-${toolCall.id}`} className="text-xs bg-muted/50 rounded px-2 py-1">
                                       <span className="font-mono">{toolCall.tool}</span>
                                       <span className="text-muted-foreground">.</span>
                                       <span className="font-mono">{toolCall.action}</span>

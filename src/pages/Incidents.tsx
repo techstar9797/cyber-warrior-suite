@@ -183,9 +183,9 @@ export default function Incidents() {
                       <SeverityBadge severity={incident.severity} />
                       <VectorTag vector={incident.vector} />
                       <AssetChip
-                        name={incident.asset.name}
-                        role={incident.asset.role}
-                        zone={incident.asset.zone}
+                        name={incident.asset?.name || 'Unknown Asset'}
+                        role={incident.asset?.role || 'unknown'}
+                        zone={incident.asset?.zone || 'unknown'}
                         className="flex-1"
                       />
                       {incident.protocol && (
