@@ -12,12 +12,19 @@ export default function Settings() {
   const [rules, setRules] = useState<RuleDef[]>([]);
   const [rulesJson, setRulesJson] = useState('');
   const [saving, setSaving] = useState(false);
+  const [slackStatus, setSlackStatus] = useState<any>(null);
 
   useEffect(() => {
     getRules().then((data) => {
       setRules(data);
       setRulesJson(JSON.stringify(data, null, 2));
     });
+    
+    // Check Slack connection status
+    fetch('http://localhost:3001/api/slack/status')
+      .then(res => res.json())
+      .then(data => setSlackStatus(data))
+      .catch(() => setSlackStatus({ connected: false }));
   }, []);
 
   const handleSaveRules = async () => {
@@ -41,7 +48,7 @@ export default function Settings() {
     }
   };
 
-  const isSlackConnected = false; // In Phase 1, always false unless COMPOSIO_API_KEY is set
+  const isSlackConnected = slackStatus?.connected || false;
 
   return (
     <Layout>
@@ -79,12 +86,33 @@ export default function Settings() {
                   <CardDescription>Send incident notifications to Slack channels</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" disabled>
-                    Configure Slack
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Set COMPOSIO_API_KEY environment variable to enable
-                  </p>
+                  {isSlackConnected ? (
+                    <div className="space-y-2">
+                      <p className="text-sm">
+                        <strong>Workspace:</strong> {slackStatus.workspace || 'CyberWarrior IIoT'}
+                      </p>
+                      <p className="text-sm">
+                        <strong>Channel:</strong> #ot-soc
+                      </p>
+                      <p className="text-sm">
+                        <strong>User:</strong> {slackStatus.user || 'sachin.news'}
+                      </p>
+                      <Button variant="outline" size="sm" asChild>
+                        <a href="https://app.slack.com/client/T09PGV93SRE/C09NSLFG2GL" target="_blank" rel="noopener noreferrer">
+                          Open Slack Channel
+                        </a>
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Button variant="outline" disabled>
+                        Configure Slack
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Set SLACK_ACCESS_TOKEN environment variable to enable
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 

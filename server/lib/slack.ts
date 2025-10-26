@@ -1,4 +1,5 @@
 import { getRedis } from './redis';
+import { postSlackMessage, ensureOtSocChannel } from './slack-real';
 
 // Slack API integration using Composio SDK (or direct Slack API)
 export async function sendSlackNotification(params: {
@@ -19,88 +20,64 @@ export async function sendSlackNotification(params: {
   const metaKey = `sec:incident:${incidentId}:slack`;
   let meta = await redis.json.get(metaKey) as any;
 
-  const composioApiKey = process.env.COMPOSIO_API_KEY;
+  // Ensure #ot-soc channel exists
+  const { channelId } = await ensureOtSocChannel();
 
-  if (!composioApiKey) {
-    // Simulated mode
-    if (!meta?.ts) {
-      const ts = Date.now().toString();
-      meta = { channelId: '#ot-soc', ts };
+  if (!meta?.ts) {
+    // First post - create root message with formatted markdown
+    const severityEmoji = {
+      critical: '🔴',
+      high: '🟠',
+      medium: '🟡',
+      low: '⚪',
+    }[incident.severity] || '⚫';
+
+    const markdownText = `# ${severityEmoji} [${incident.severity.toUpperCase()}] ${incident.vector.replace(/_/g, ' ').toUpperCase()}
+
+**Asset**: ${incident.asset?.name || 'Unknown'}  
+**Zone**: ${incident.asset?.zone || 'N/A'}  
+**Protocol**: ${incident.protocol || 'N/A'}  
+**Count**: ${incident.count}  
+
+**First Seen**: ${incident.firstSeen}  
+**Last Seen**: ${incident.lastSeen}  
+
+**Detector**: ${incident.detector || 'Unknown'}  
+**Incident ID**: \`${incidentId}\``;
+
+    const result = await postSlackMessage({
+      channel: channelId,
+      markdown_text: markdownText,
+    });
+
+    if (result.success && result.ts) {
+      meta = { channelId, ts: result.ts, permalink: result.permalink };
       await redis.json.set(metaKey, '$', meta);
-      console.log(`📢 Slack [SIMULATED]: New incident ${incidentId} posted to ${meta.channelId}`);
+      console.log(`📢 Slack [REAL]: New incident ${incidentId} posted to channel ${channelId}`);
+      console.log(`   Link: ${result.permalink}`);
+      return { ok: true, ts: result.ts, simulated: false };
+    } else {
+      // Fallback to simulated
+      const ts = Date.now().toString();
+      meta = { channelId, ts };
+      await redis.json.set(metaKey, '$', meta);
+      console.log(`📢 Slack [SIMULATED]: New incident ${incidentId}`);
+      return { ok: true, ts, simulated: true };
+    }
+  } else {
+    // Thread reply
+    const result = await postSlackMessage({
+      channel: meta.channelId,
+      text: message || `Update: ${eventType}`,
+      thread_ts: meta.ts,
+    });
+
+    if (result.success) {
+      console.log(`📢 Slack [REAL]: Update to incident ${incidentId} in thread`);
+      return { ok: true, ts: meta.ts, simulated: false };
     } else {
       console.log(`📢 Slack [SIMULATED]: Update to incident ${incidentId}`);
+      return { ok: true, ts: meta.ts, simulated: true };
     }
-    return { ok: true, ts: meta.ts, simulated: true };
   }
-
-  // Real Composio integration
-  try {
-    const composioUrl = 'https://api.composio.dev/v1';
-    const headers = {
-      'Authorization': `Bearer ${composioApiKey}`,
-      'Content-Type': 'application/json',
-    };
-
-    if (!meta?.ts) {
-      // First post - create root message
-      const blocks = [
-        {
-          type: 'header',
-          text: {
-            type: 'plain_text',
-            text: `[${incident.severity.toUpperCase()}] ${incident.vector.replace(/_/g, ' ')} on ${incident.asset?.name || 'Unknown Asset'}`,
-          },
-        },
-        {
-          type: 'section',
-          fields: [
-            { type: 'mrkdwn', text: `*Protocol:*\n${incident.protocol || 'N/A'}` },
-            { type: 'mrkdwn', text: `*Count:*\n${incident.count}` },
-            { type: 'mrkdwn', text: `*First Seen:*\n${incident.firstSeen}` },
-            { type: 'mrkdwn', text: `*Last Seen:*\n${incident.lastSeen}` },
-          ],
-        },
-      ];
-
-      const response = await fetch(`${composioUrl}/actions/slack/postMessage`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          channel: '#ot-soc',
-          blocks,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const ts = data.ts || data.data?.ts || Date.now().toString();
-        meta = { channelId: '#ot-soc', ts };
-        await redis.json.set(metaKey, '$', meta);
-        console.log(`📢 Slack [REAL]: New incident ${incidentId} posted to ${meta.channelId}`);
-        return { ok: true, ts, simulated: false };
-      }
-    } else {
-      // Thread reply
-      const response = await fetch(`${composioUrl}/actions/slack/postMessage`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          channel: meta.channelId,
-          text: message || `Event: ${eventType}`,
-          thread_ts: meta.ts,
-        }),
-      });
-
-      if (response.ok) {
-        console.log(`📢 Slack [REAL]: Update to incident ${incidentId}`);
-        return { ok: true, ts: meta.ts, simulated: false };
-      }
-    }
-  } catch (error) {
-    console.error('Composio API error:', error);
-  }
-
-  // Fallback to simulated
-  return { ok: true, ts: meta?.ts || Date.now().toString(), simulated: true };
 }

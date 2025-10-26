@@ -1,8 +1,19 @@
 import { Router } from 'express';
 import { getRedis } from '../lib/redis';
 import { sendSlackNotification } from '../lib/slack';
+import { getSlackStatus } from '../lib/slack-real';
 
 const router = Router();
+
+// GET /api/slack/status - Check Slack connection
+router.get('/status', async (req, res) => {
+  try {
+    const status = await getSlackStatus();
+    res.json(status);
+  } catch (error) {
+    res.json({ connected: false, error: String(error) });
+  }
+});
 
 router.post('/notify', async (req, res) => {
   try {
