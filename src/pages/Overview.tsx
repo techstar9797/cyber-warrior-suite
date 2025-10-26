@@ -3,7 +3,7 @@ import { Layout } from '@/components/Layout';
 import { KpiCard } from '@/components/KpiCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getDashboardKpis, getIncidents, DashboardKpis } from '@/lib/mock';
+import { getDashboardKpis, getIncidents, DashboardKpis, invalidateCache } from '@/lib/mock';
 import { Incident } from '@/lib/types';
 import { AlertCircle, Activity, Clock, TrendingUp, RefreshCw } from 'lucide-react';
 import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -45,10 +45,12 @@ export default function Overview() {
         method: 'POST',
       });
       if (response.ok) {
-        console.log('✅ Feed refreshed');
-        // Reload dashboard data with cache busting
+        console.log('✅ Feed refreshed, invalidating cache...');
+        // Clear cache to force fresh data load
+        invalidateCache();
+        // Reload dashboard data with fresh data
         await loadDashboardData();
-        // Force refresh of all KPIs
+        // Force refresh trigger
         setRefreshKey(prev => prev + 1);
       }
     } catch (error) {

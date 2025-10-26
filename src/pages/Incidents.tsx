@@ -3,7 +3,7 @@ import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { getIncidents } from '@/lib/mock';
+import { getIncidents, invalidateCache } from '@/lib/mock';
 import { Incident, Severity, Vector, Protocol } from '@/lib/types';
 import { SeverityBadge } from '@/components/SeverityBadge';
 import { VectorTag } from '@/components/VectorTag';
@@ -74,7 +74,9 @@ export default function Incidents() {
         method: 'POST',
       });
       if (response.ok) {
-        console.log('✅ Feed refreshed');
+        console.log('✅ Feed refreshed, invalidating cache...');
+        // Clear cache to force fresh data load
+        invalidateCache();
         // Reload incidents after refresh
         await loadIncidents();
       }
