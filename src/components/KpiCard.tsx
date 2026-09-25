@@ -7,14 +7,15 @@ interface KpiCardProps {
   icon: LucideIcon;
   trend?: string;
   className?: string;
+  delay?: number;
 }
 
-export function KpiCard({ title, value, icon: Icon, trend, className }: KpiCardProps) {
+export function KpiCard({ title, value, icon: Icon, trend, className, delay = 0 }: KpiCardProps) {
   return (
-    <Card className={className}>
+    <Card className={`animate-rise ${className ?? ''}`} style={{ animationDelay: `${delay}ms` }}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon className="h-4 w-4 text-muted-foreground transition-transform duration-300 group-hover:scale-110" />
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>

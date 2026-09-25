@@ -83,8 +83,10 @@ async function main() {
                   'Executor',
                 ],
                 steps: [],
-                outcome: 'pending',
+                outcome: 'active',
               });
+            } else if (!exists.outcome || exists.outcome === 'pending') {
+              await r.json.set(runKey, '$.outcome', 'active');
             }
             
             // Add planner step (rule evaluation)

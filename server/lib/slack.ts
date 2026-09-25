@@ -25,14 +25,15 @@ export async function sendSlackNotification(params: {
 
   if (!meta?.ts) {
     // First post - create root message with formatted markdown
+    const severity = String(incident.severity || 'unknown');
     const severityEmoji = {
       critical: '🔴',
       high: '🟠',
       medium: '🟡',
       low: '⚪',
-    }[incident.severity] || '⚫';
+    }[severity] || '⚫';
 
-    const markdownText = `# ${severityEmoji} [${incident.severity.toUpperCase()}] ${incident.vector.replace(/_/g, ' ').toUpperCase()}
+    const markdownText = `# ${severityEmoji} [${severity.toUpperCase()}] ${String(incident.vector || 'alert').replace(/_/g, ' ').toUpperCase()}
 
 **Asset**: ${incident.asset?.name || 'Unknown'}  
 **Zone**: ${incident.asset?.zone || 'N/A'}  

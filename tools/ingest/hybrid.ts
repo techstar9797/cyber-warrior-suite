@@ -191,7 +191,7 @@ async function ingestHybridBatch() {
           ],
         },
       ],
-      outcome: 'pending',
+      outcome: 'active',
     });
     
     await r.json.set(`sec:incident:${inc.id}`, '$', inc);

@@ -3,6 +3,19 @@ import { getRedis } from '../lib/redis';
 
 const router = Router();
 
+function isIncident(doc: any): boolean {
+  return Boolean(doc && doc.id && doc.asset && doc.vector);
+}
+
+function pageIncidents(items: any[], pageNum: number, pageSizeNum: number) {
+  const valid = items.filter(isIncident);
+  if (valid.length <= pageSizeNum && items.length <= pageSizeNum) {
+    return valid;
+  }
+  const start = (pageNum - 1) * pageSizeNum;
+  return valid.slice(start, start + pageSizeNum);
+}
+
 // GET /api/incidents?id=... or GET /api/incidents with filters
 router.get('/', async (req, res) => {
   // Disable caching for fresh data
@@ -37,7 +50,11 @@ router.get('/', async (req, res) => {
         LIMIT: { from: (pageNum - 1) * pageSizeNum, size: pageSizeNum },
       });
 
-      const incidents = results.documents.map((doc) => doc.value);
+      const incidents = pageIncidents(
+        results.documents.map((doc) => doc.value),
+        pageNum,
+        pageSizeNum
+      );
       res.json({ total: results.total, items: incidents });
     } catch (error) {
       // Fallback to GETALL if index doesn't exist
@@ -50,8 +67,9 @@ router.get('/', async (req, res) => {
       incidents.sort((a: any, b: any) => {
         return new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime();
       });
-      
-      res.json({ total: incidents.length, items: incidents });
+
+      const paged = pageIncidents(incidents, pageNum, pageSizeNum);
+      res.json({ total: incidents.filter(isIncident).length, items: paged });
     }
   } catch (error) {
     console.error('Error fetching incidents:', error);

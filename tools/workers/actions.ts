@@ -48,12 +48,17 @@ async function main() {
 
           console.log(`📨 Processing alert for incident ${incident.id}`);
 
-          // Send Slack notification
-          const result = await sendSlackNotification({
-            incidentId: incident.id,
-            message: `Rule matched: ${incident.rule || 'Unknown rule'}`,
-            eventType: 'ALERT',
-          });
+          // Slack is best-effort. A revoked token must not leave the run pending.
+          let result: { simulated: boolean } = { simulated: true };
+          try {
+            result = await sendSlackNotification({
+              incidentId: incident.id,
+              message: `Rule matched: ${incident.rule || 'Unknown rule'}`,
+              eventType: 'ALERT',
+            });
+          } catch (slackError) {
+            console.error('Slack notify failed, marking run active anyway:', slackError);
+          }
 
           console.log(
             `✅ Slack notification ${result.simulated ? 'simulated' : 'sent'} for incident ${incident.id}`

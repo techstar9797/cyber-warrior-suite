@@ -4,26 +4,24 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AgentRun } from '@/lib/types';
-import { Bot, CheckCircle, Clock, XCircle, Activity, RefreshCw } from 'lucide-react';
+import { Bot, CheckCircle, XCircle, Activity, RefreshCw } from 'lucide-react';
 
 export default function AgentRuns() {
   const [runs, setRuns] = useState<AgentRun[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadAgentRuns();
+    loadAgentRuns(true);
+    const id = setInterval(() => loadAgentRuns(false), 5000);
+    return () => clearInterval(id);
   }, []);
 
-  async function loadAgentRuns() {
-    setLoading(true);
+  async function loadAgentRuns(initial = false) {
+    if (initial) setLoading(true);
     try {
-      console.log('Loading agent runs...');
-      // Call backend API to get agent runs (limit to 20 most recent)
       const response = await fetch('http://localhost:3001/api/agent-runs?limit=20');
-      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
-        console.log('Agent runs data:', data.length, 'runs');
         setRuns(data);
       } else {
         console.error('Failed to fetch agent runs:', response.status, response.statusText);
@@ -31,38 +29,53 @@ export default function AgentRuns() {
     } catch (error) {
       console.error('Agent runs API error:', error);
     } finally {
-      setLoading(false);
+      if (initial) setLoading(false);
     }
   }
 
-  function getOutcomeBadge(outcome: string) {
+  function resolveOutcome(run: AgentRun): 'mitigated' | 'escalated' | 'failed' | 'active' {
+    const steps = run.steps || [];
+    const hasExecutor = steps.some(
+      (step) => step.agentId === 'Executor' || step.type === 'notify' || step.type === 'act'
+    );
+    if (run.outcome === 'failed') return 'failed';
+    if (run.outcome === 'escalated') return 'escalated';
+    if (run.outcome === 'mitigated' || hasExecutor) return 'mitigated';
+    return 'active';
+  }
+
+  function getOutcomeBadge(run: AgentRun) {
+    const outcome = resolveOutcome(run);
     switch (outcome) {
       case 'mitigated':
         return (
-          <Badge className="bg-green-100 text-green-800">
+          <Badge className="bg-green-500/15 text-green-300 border border-green-500/30">
             <CheckCircle className="w-3 h-3 mr-1" />
             Mitigated
           </Badge>
         );
       case 'escalated':
         return (
-          <Badge className="bg-yellow-100 text-yellow-800">
+          <Badge className="bg-yellow-500/15 text-yellow-200 border border-yellow-500/30">
             <Activity className="w-3 h-3 mr-1" />
             Escalated
           </Badge>
         );
       case 'failed':
         return (
-          <Badge className="bg-red-100 text-red-800">
+          <Badge className="bg-red-500/15 text-red-300 border border-red-500/30">
             <XCircle className="w-3 h-3 mr-1" />
             Failed
           </Badge>
         );
       default:
         return (
-          <Badge variant="secondary">
-            <Clock className="w-3 h-3 mr-1" />
-            Pending
+          <Badge className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
+            <span className="relative mr-1.5 flex h-2 w-2">
+              <span className="animate-live-ring absolute inline-flex h-full w-full rounded-full bg-emerald-400" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            Live · Active
           </Badge>
         );
     }
@@ -98,9 +111,18 @@ export default function AgentRuns() {
     <Layout>
       <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold">Agent Runs</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-bold">Agent Runs</h2>
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-live-ring absolute inline-flex h-full w-full rounded-full bg-emerald-400" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              Live
+            </span>
+          </div>
           <div className="flex gap-2">
-            <Button onClick={loadAgentRuns} disabled={loading} variant="outline" size="sm">
+            <Button onClick={() => loadAgentRuns(false)} disabled={loading} variant="outline" size="sm">
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               {loading ? 'Loading...' : 'Refresh'}
             </Button>
@@ -120,7 +142,7 @@ export default function AgentRuns() {
             <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Agent Runs Found</h3>
             <p className="text-muted-foreground mb-4">No agent activity has been recorded yet.</p>
-            <Button onClick={loadAgentRuns} variant="outline">
+            <Button onClick={() => loadAgentRuns(false)} variant="outline">
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
@@ -149,15 +171,19 @@ export default function AgentRuns() {
               </div>
             ) : (
               <div className="space-y-4">
-                {runs.map((run) => (
-                  <Card key={run.id} className="border-l-4 border-l-primary">
+                {runs.map((run, runIndex) => (
+                  <Card
+                    key={run.id}
+                    className="border-l-4 border-l-emerald-400 animate-rise"
+                    style={{ animationDelay: `${runIndex * 50}ms` }}
+                  >
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Bot className="w-5 h-5" />
                           <CardTitle className="text-lg">Run {run.id}</CardTitle>
                         </div>
-                        {getOutcomeBadge(run.outcome)}
+                        {getOutcomeBadge(run)}
                       </div>
                       <CardDescription>
                         Incident: {run.incidentId} • Started: {new Date(run.startedAt).toLocaleString()}

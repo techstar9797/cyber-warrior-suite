@@ -123,5 +123,5 @@ export interface AgentRun {
     messages?: AgentMessage[];
     attachments?: Array<{ kind: 'evidence' | 'chart' | 'diff'; label: string; url?: string }>;
   }>;
-  outcome: 'noop' | 'mitigated' | 'escalated' | 'failed';
+  outcome: 'noop' | 'mitigated' | 'escalated' | 'failed' | 'active' | 'pending';
 }

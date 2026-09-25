@@ -10,6 +10,14 @@ const OT_SOC_CHANNEL = process.env.SLACK_OT_SOC_CHANNEL || 'C09NSLFG2GL'; // Use
 
 // Initialize Slack client
 const slackClient = new WebClient(SLACK_TOKEN);
+let slackDisabledReason: string | null = null;
+
+function rememberSlackFailure(error: any) {
+  const message = String(error?.data?.error || error?.message || error || '');
+  if (message.includes('token_revoked') || message.includes('invalid_auth')) {
+    slackDisabledReason = message;
+  }
+}
 
 interface PostMessageResult {
   success: boolean;
@@ -24,6 +32,9 @@ export async function postSlackMessage(params: {
   markdown_text?: string;
   thread_ts?: string;
 }): Promise<PostMessageResult> {
+  if (slackDisabledReason) {
+    return { success: false, error: slackDisabledReason };
+  }
   try {
     const channel = params.channel || OT_SOC_CHANNEL;
     const text = params.markdown_text || params.text || 'No message content';
@@ -57,6 +68,7 @@ export async function postSlackMessage(params: {
       permalink,
     };
   } catch (error: any) {
+    rememberSlackFailure(error);
     console.error('❌ Slack API error:', error.message || error);
     return {
       success: false,
@@ -66,6 +78,9 @@ export async function postSlackMessage(params: {
 }
 
 export async function ensureOtSocChannel(): Promise<{ channelId: string; name: string }> {
+  if (slackDisabledReason) {
+    return { channelId: OT_SOC_CHANNEL, name: 'ot-soc' };
+  }
   try {
     // Verify channel exists
     const info = await slackClient.conversations.info({
@@ -80,6 +95,7 @@ export async function ensureOtSocChannel(): Promise<{ channelId: string; name: s
       };
     }
   } catch (error: any) {
+    rememberSlackFailure(error);
     if (error.data?.error === 'channel_not_found') {
       // Create the channel
       console.log('Creating #ot-soc channel...');

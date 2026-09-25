@@ -6,7 +6,7 @@ export interface DashboardKpis {
   mttrMinutes: number;
   incidentsPerHour: { hour: string; count: number }[];
   protocolMix: Record<Protocol, number>;
-  topVectors: { vector: string; count: number }[];
+  topVectors: { vector: string; count: number; percent: number }[];
 }
 
 let cachedIncidents: Incident[] | null = null;
@@ -29,7 +29,10 @@ async function loadIncidents(): Promise<Incident[]> {
   try {
     const response = await fetch('http://localhost:3001/api/incidents');
     const data = await response.json();
-    cachedIncidents = data.items || data;
+    const raw = data.items || data;
+    cachedIncidents = (Array.isArray(raw) ? raw : []).filter(
+      (incident) => incident?.id && incident?.asset && incident?.vector
+    );
     return cachedIncidents!;
   } catch (error) {
     console.warn('Backend API not available, using JSON fallback:', error);
@@ -141,8 +144,13 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
   incidents.forEach((inc) => {
     vectorCounts[inc.vector] = (vectorCounts[inc.vector] || 0) + 1;
   });
+  const vectorTotal = Object.values(vectorCounts).reduce((sum, count) => sum + count, 0) || 1;
   const topVectors = Object.entries(vectorCounts)
-    .map(([vector, count]) => ({ vector, count }))
+    .map(([vector, count]) => ({
+      vector,
+      count,
+      percent: Math.round((count / vectorTotal) * 1000) / 10,
+    }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
